@@ -32,7 +32,7 @@ namespace WebApplication11
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddOptions();
-            services.AddDbContext<FoodDbContext>(opt => opt.UseInMemoryDatabase("FoodDatabase"));
+            services.AddDbContext<OrderDBContext>(opt => opt.UseInMemoryDatabase("OrderDatabase"));
             services.AddCors(options =>
             {
                 options.AddPolicy("AllowAllOrigins",
@@ -46,12 +46,12 @@ namespace WebApplication11
             });
 
             services.AddSingleton<ISeedDataService, SeedDataService>();
-            services.AddScoped<IFoodRepository, EfFoodRepository>();
+            services.AddScoped<IOrderRepository, EfOrderRepository>();
             services.AddRouting(options => options.LowercaseUrls = true);
             services.AddSingleton<IActionContextAccessor, ActionContextAccessor>();
             services.AddScoped<IUrlHelper>(implementationFactory =>
             {
-                var actionContext = implementationFactory.GetService<IActionContextAccessor>().ActionContext;
+                ActionContext actionContext = implementationFactory.GetService<IActionContextAccessor>().ActionContext;
                 return new UrlHelper(actionContext);
             });
 
@@ -67,10 +67,10 @@ namespace WebApplication11
             services.AddSwaggerGen(
                 options =>
                 {
-                    var provider = services.BuildServiceProvider()
+                    IApiVersionDescriptionProvider provider = services.BuildServiceProvider()
                                         .GetRequiredService<IApiVersionDescriptionProvider>();
 
-                    foreach (var description in provider.ApiVersionDescriptions)
+                    foreach (ApiVersionDescription description in provider.ApiVersionDescriptions)
                     {
                         options.SwaggerDoc(
                             description.GroupName,
@@ -84,7 +84,7 @@ namespace WebApplication11
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, ILoggerFactory loggerFactory, 
+        public void Configure(IApplicationBuilder app, ILoggerFactory loggerFactory,
             IHostingEnvironment env, IApiVersionDescriptionProvider provider)
         {
             loggerFactory.AddConsole();
@@ -102,10 +102,10 @@ namespace WebApplication11
                     {
                         context.Response.StatusCode = 500;
                         context.Response.ContentType = "text/plain";
-                        var errorFeature = context.Features.Get<IExceptionHandlerFeature>();
+                        IExceptionHandlerFeature errorFeature = context.Features.Get<IExceptionHandlerFeature>();
                         if (errorFeature != null)
                         {
-                            var logger = loggerFactory.CreateLogger("Global exception logger");
+                            ILogger logger = loggerFactory.CreateLogger("Global exception logger");
                             logger.LogError(500, errorFeature.Error, errorFeature.Error.Message);
                         }
 
@@ -122,7 +122,7 @@ namespace WebApplication11
             app.UseSwaggerUI(
                 options =>
                 {
-                    foreach (var description in provider.ApiVersionDescriptions)
+                    foreach (ApiVersionDescription description in provider.ApiVersionDescriptions)
                     {
                         options.SwaggerEndpoint(
                             $"/swagger/{description.GroupName}/swagger.json",
@@ -133,9 +133,9 @@ namespace WebApplication11
             app.UseCors("AllowAllOrigins");
             AutoMapper.Mapper.Initialize(mapper =>
             {
-                mapper.CreateMap<FoodItem, FoodItemDto>().ReverseMap();
-                mapper.CreateMap<FoodItem, FoodUpdateDto>().ReverseMap();
-                mapper.CreateMap<FoodItem, FoodCreateDto>().ReverseMap();
+                mapper.CreateMap<OrderItem, OrderItemDto>().ReverseMap();
+                mapper.CreateMap<OrderItem, OrderUpdateDto>().ReverseMap();
+                mapper.CreateMap<OrderItem, OrderCreateDto>().ReverseMap();
             });
 
             app.UseMvc();

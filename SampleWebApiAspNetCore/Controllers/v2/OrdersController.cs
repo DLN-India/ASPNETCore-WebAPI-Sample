@@ -4,7 +4,7 @@ namespace SampleWebApiAspNetCore.v2.Controllers
 {
     [ApiVersion("2.0")]
     [Route("api/v{version:apiVersion}/[controller]")]
-    public class FoodsController : ControllerBase
+    public class OrdersController : ControllerBase
     {
         [HttpGet]
         public ActionResult Get()

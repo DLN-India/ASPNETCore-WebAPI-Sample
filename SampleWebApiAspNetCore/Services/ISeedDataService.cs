@@ -5,6 +5,6 @@ namespace SampleWebApiAspNetCore.Services
 {
     public interface ISeedDataService
     {
-        Task Initialize(FoodDbContext context);
+        Task Initialize(OrderDBContext context);
     }
 }
